@@ -30,3 +30,52 @@ Change State
         if (m_pStateCurrent)
             m_pStateCurrent.EventStateEnter(pPrevState);        // 현 State에서 시작하면서 전에 들어왔던 State 값을 보내준다.
     }
+
+- 클래스에서 Change 타입의 State를 호출시 전에 실행중인 State는 즉각 EventStateLeave를 통해 중단하고 Change 타입의 State가 EventStateEnter를 호출
+
+Interrupt State
+
+    void Proc_State_Interrupt(StateBase pState)
+    {
+        if(m_pCoroutine != null)
+        {
+            StopCoroutine(m_pCoroutine);
+            m_pCoroutine = null;
+        }
+
+        StopAllCoroutines();
+
+        StateBase pPrevState = m_pStateCurrent;
+        Proc_SetCurrentState(pState);
+
+        if(pPrevState)
+        {
+            pPrevState.EventStateInterrupted(m_pStateCurrent);
+            m_StackInterrupt.Push(pState);
+        }
+
+        m_pStateCurrent.EventStateEnter(pPrevState);
+    }
+
+- 클래스에서 Interrupt를 요청시 현재 실행중인 State는 EventStateInterrupted 함수를 호출 Interrupt를 요청 후 State는 Stack에 State를 보관후 EventStateEnter를 실행
+ex) 보통 게임을 Pause 하거나 이벤트 돌입으로 인한 BGM 및 카메라등이 사용한다.
+
+Waiting State
+
+    void Proc_State_Waiting(StateBase pState)
+    {
+        if(m_pStateCurrent == null)
+        {
+            StopAllCoroutines();
+            Proc_SetCurrentState(pState);
+            m_pStateCurrent.EventStateEnter(null);
+        }
+        else
+        {
+            m_QueueWaiting.Enqueue(pState);
+            m_pStateCurrent.EventStateNextStateWait(pState);
+        }
+    }
+
+- Class에서 Waiting을 요청시 최근 사용한 State가 null 일시 즉각 EventStateEnter 호출하고 아니면 Queue에 State를 Enqueue 후 EventStateNextStateWait 호출
+
