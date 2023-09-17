@@ -1,0 +1,42 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayModeBase : FObjectBase
+{
+    protected PlayModeFSM m_pPlayModeFSM = null;
+
+    private void Awake()
+    {
+        m_pPlayModeFSM = gameObject.AddComponent<PlayModeFSM>();
+        m_pPlayModeFSM.InitFSM(this);
+    }
+
+    private void Start()
+    {
+        Init();
+    }
+
+    public void Init()
+    {
+        DoPlayModeStart();       
+    }
+
+    public void DoPlayModeStart()
+    {
+        m_pPlayModeFSM.DoFSM_PlayMode_Start();
+        Debug.Log("======= Call_DoFSM_PlayMode_Start");
+    }
+
+    public void DoPlayModeEnd()
+    {
+        m_pPlayModeFSM.DoFSM_PlayMode_End();
+        Debug.Log("======= Call_DoFSM_PlayMode_End");
+    }
+
+    public void DoPlayModePause()
+    {
+        m_pPlayModeFSM.DoFSM_PlayMode_Pause();
+        Debug.Log("======= Call_DoFSM_PlayMode_Pause");
+    }
+}
